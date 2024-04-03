@@ -1,0 +1,37 @@
+version: '3'
+services:
+  db:
+    image: mysql:8.1.0
+    environment:
+      TZ: Europe/Budapest
+      MYSQL_ROOT_PASSWORD: supersecret
+    volumes:
+      - ./db/sql:/docker-entrypoint-initdb.d # Run every sql script what's in this directory
+      - ./db/data:/var/lib/mysql/ # Mount data to the host to don't lose DB at restart
+    ports:
+      - "3306:2206"
+    networks:
+      - bridge
+
+  backend:
+    build: ./backend/
+    depends_on:
+      - db
+    restart: unless-stopped
+    volumes:
+      - ./frontend/:/app/frontend
+    environment:
+      ROOMS: living_room dining_room kitchen bedroom bathroom hall_1 hall_2 kids_bedroom
+      XOR_KEY: "0100010001000100"
+      DB_USER: root
+      DB_PASS: supersecret
+      DB_PORT: 3306
+      DB_HOST: db
+    ports:
+      - "8088:8088"
+      - "8089:8089"
+    networks:
+      - bridge
+
+networks:
+  bridge:
