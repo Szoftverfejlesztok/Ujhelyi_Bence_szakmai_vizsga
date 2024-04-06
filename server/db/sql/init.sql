@@ -8,7 +8,7 @@ SET GLOBAL interactive_timeout=3;
 
 CREATE TABLE IF NOT EXISTS event_logs (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    lamp VARCHAR(255),
+    device VARCHAR(255),
     date DATETIME,
     state BOOLEAN
 );

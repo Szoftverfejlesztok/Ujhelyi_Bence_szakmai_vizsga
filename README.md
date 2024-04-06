@@ -10,6 +10,6 @@ Smarthome thesis project
 - User documentation(HUN)
 
 ## Description
-This a remote lamp controller project using [ESP32_Relay_X8](https://templates.blakadder.com/ESP32_Relay_X8.html).  
+This a remote device controller project using [ESP32_Relay_X8](https://templates.blakadder.com/ESP32_Relay_X8.html).  
 Client connect to a publicly reachable server and that communicate with the controller via websocket and provide instructions.
 Due to the server is public the user have to authenticate with a password, this is managed with haproxy.

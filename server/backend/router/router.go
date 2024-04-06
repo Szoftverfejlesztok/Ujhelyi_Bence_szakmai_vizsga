@@ -19,23 +19,23 @@ var upgrader = websocket.Upgrader{}
 func AddRecordHandler(w http.ResponseWriter, r *http.Request) {
 	slog.Info("Got AddRecord POST request")
 
-	event := &types.Lamp{}
+	event := &types.Device{}
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&event); err != nil {
 		http.Error(w, "Error unmarshalling request body", http.StatusBadRequest)
 		return
 	}
-	slog.Info("Request body", slog.String("lamp", event.Lamp), slog.Bool("state", event.State))
-	if _, err := db.IsLampExist(event.Lamp); err != nil {
-		http.Error(w, "Error this lamp does not exist", http.StatusBadRequest)
+	slog.Info("Request body", slog.String("device", event.Device), slog.Bool("state", event.State))
+	if _, err := db.IsDeviceExist(event.Device); err != nil {
+		http.Error(w, "Error this device does not exist", http.StatusBadRequest)
 	}
 
 	// Create and add a record to the database
-	record := types.Lamp{
-		Id:    0,
-		Lamp:  event.Lamp,
-		Date:  "",
-		State: event.State,
+	record := types.Device{
+		Id:     0,
+		Device: event.Device,
+		Date:   "",
+		State:  event.State,
 	}
 	record, err := db.AddRecord(record)
 	if err != nil {
@@ -55,18 +55,18 @@ func AddRecordHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// GetLastByLampHandler handler for /getLastByLamp/<LAMP> GET requests
-func GetLastByLampHandler(w http.ResponseWriter, r *http.Request) {
-	lamp := chi.URLParam(r, "lamp")
-	slog.Info("Got GetLastByLamp GET request", slog.String("lamp", lamp))
-	if _, err := db.IsLampExist(lamp); err != nil {
-		http.Error(w, "Error this lamp does not exist", http.StatusBadRequest)
+// GetLastByDeviceHandler handler for /getLastByDevice/<device> GET requests
+func GetLastByDeviceHandler(w http.ResponseWriter, r *http.Request) {
+	device := chi.URLParam(r, "device")
+	slog.Info("Got GetLastByDevice GET request", slog.String("device", device))
+	if _, err := db.IsDeviceExist(device); err != nil {
+		http.Error(w, "Error this device does not exist", http.StatusBadRequest)
 	}
 
-	record, err := db.GetLastByLamp(lamp)
+	record, err := db.GetLastByDevice(device)
 	if err != nil {
 		slog.Error("Error getting record from the database", slog.Any("error", err),
-			slog.String("lamp", lamp))
+			slog.String("device", device))
 		http.Error(w, "Error getting record from the database", http.StatusInternalServerError)
 	}
 
@@ -76,27 +76,27 @@ func GetLastByLampHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if _, err = w.Write(resp); err != nil {
-		slog.Error("Could not serve request for GetLastByLamp")
+		slog.Error("Could not serve request for GetLastByDevice")
 	}
 }
 
-// GetLamps
-func GetLamps(w http.ResponseWriter, r *http.Request) {
-	slog.Info("Got GetLamps request")
+// GetDevices
+func GetDevices(w http.ResponseWriter, r *http.Request) {
+	slog.Info("Got GetDevices request")
 
-	lamps, err := db.GetDistinctLamp()
+	devices, err := db.GetDistinctDevice()
 	if err != nil {
-		slog.Error("Error getting lamps", slog.Any("error", err))
+		slog.Error("Error getting devices", slog.Any("error", err))
 		http.Error(w, "Error getting record from the database", http.StatusInternalServerError)
 	}
 	var resp []byte
-	resp, err = json.Marshal(lamps)
+	resp, err = json.Marshal(devices)
 	if err != nil {
 		slog.Error("Error marshalling response")
 	}
 
 	if _, err = w.Write(resp); err != nil {
-		slog.Error("Could not serve request for GetLamps")
+		slog.Error("Could not serve request for Getdevices")
 	}
 }
 
@@ -168,7 +168,7 @@ func HandleClient(w http.ResponseWriter, r *http.Request) {
 
 		states, err := db.GetStates()
 		if err != nil {
-			slog.Error("Error getting lamp states from database", slog.Any("error", err))
+			slog.Error("Error getting device states from database", slog.Any("error", err))
 			return
 		}
 

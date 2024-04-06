@@ -1,13 +1,13 @@
 // init runs only once when the page loads
 function init() {
-    getLamps()
+    getDevices()
         .then(data => {
             if (data !== null) {
                 const rooms = JSON.parse(data);
                 for (let i = 0; i < rooms.length; i++) {
-                    addLamp(i, rooms[i].lamp);
+                    addDevice(i, rooms[i].device);
                     if ( rooms[i].state === true ) {
-                        setSliderState(makeStringFancy(rooms[i].lamp), rooms[i].state)
+                        setSliderState(makeStringFancy(rooms[i].device), rooms[i].state)
                     }
                 }
             }
@@ -15,9 +15,9 @@ function init() {
 
 }
 
-// getLamps get the lamps and their states from the database
-function getLamps() {
-    return fetch('http://backend:8088/api/getLamps')
+// getDevices get the devices and their states from the database
+function getDevices() {
+    return fetch('http://backend:8088/api/getDevices')
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! State: ${response.state}`);
@@ -40,8 +40,8 @@ function makeStringFancy(str) {
     return capitalizedWords.join(' ');
 }
 
-// addLamp add lamps to the frontend, triggered only when the page loads
-function addLamp(id, lampName) {
+// addDevice add devices to the frontend, triggered only when the page loads
+function addDevice(id, deviceName) {
     const cardDiv = document.createElement("div");
     cardDiv.className = "card";
     cardDiv.style.width = "auto";
@@ -56,11 +56,11 @@ function addLamp(id, lampName) {
     switchLabel.className = "switch";
     switchLabel.innerHTML = "<input type=\"checkbox\"><span class=\"slider\"></span>";
 
-    const lampNameElement = document.createElement("h4");
-    lampNameElement.className = 'card-title';
-    lampNameElement.innerText = makeStringFancy(lampName);
+    const deviceNameElement = document.createElement("h4");
+    deviceNameElement.className = 'card-title';
+    deviceNameElement.innerText = makeStringFancy(deviceName);
 
-    switchContainer.appendChild(lampNameElement);
+    switchContainer.appendChild(deviceNameElement);
     switchContainer.appendChild(switchLabel);
 
     cardBody.appendChild(switchContainer);
@@ -70,7 +70,7 @@ function addLamp(id, lampName) {
 
     const switchInput = cardDiv.querySelector('.switch input');
     switchInput.addEventListener('click', function() {
-        sendNewState(lampName, switchInput.checked);
+        sendNewState(deviceName, switchInput.checked);
     });
 }
 
@@ -93,7 +93,7 @@ function setSliderState(cardTitle, newState) {
 // sendNewState send the new state of a switch, triggered by a toggle switch
 function sendNewState(name, state) {
     const data = {
-        lamp: name,
+        device: name,
         state: state
     };
     const jsonData = JSON.stringify(data);
@@ -114,7 +114,7 @@ function sendNewState(name, state) {
             return response.json();
         })
         .then(data => {
-            console.log(`Lamp ${makeStringFancy(data.lamp)} set to ${data.state}`);
+            console.log(`Device ${makeStringFancy(data.device)} set to ${data.state}`);
         })
         .catch(error => {
             console.error('Error:', error);

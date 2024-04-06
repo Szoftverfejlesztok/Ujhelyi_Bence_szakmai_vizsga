@@ -1,8 +1,8 @@
 package types
 
-type Lamp struct {
-	Id    int    `json:"id,omitempty"`
-	Lamp  string `json:"lamp"`
-	Date  string `json:"date,omitempty"`
-	State bool   `json:"state"`
+type Device struct {
+	Id     int    `json:"id,omitempty"`
+	Device string `json:"device"`
+	Date   string `json:"date,omitempty"`
+	State  bool   `json:"state"`
 }

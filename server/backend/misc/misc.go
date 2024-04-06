@@ -37,21 +37,21 @@ func XorData(input string) (output string) {
 	return output
 }
 
-// SetupLamps read ROOMS system environment and assign one lamp to it
+// SetupDevices read ROOMS system environment and assign one device to it
 // This function os called only once before everything else starts
-func SetupLamps() error {
+func SetupDevices() error {
 	rooms := os.Getenv("ROOMS")
-	lamps := strings.Fields(rooms)
+	devices := strings.Fields(rooms)
 
-	slog.Info("Adding lamps to the database", slog.Any("lamps", lamps))
-	for _, lamp := range lamps {
-		l := types.Lamp{
-			Lamp:  lamp,
-			State: false,
+	slog.Info("Adding devices to the database", slog.Any("devices", devices))
+	for _, device := range devices {
+		l := types.Device{
+			Device: device,
+			State:  false,
 		}
 		if _, dbErr := db.AddRecord(l); dbErr != nil {
-			slog.Error("Error adding lamp to the database", slog.Any("error", dbErr),
-				slog.String("lamp", lamp))
+			slog.Error("Error adding device to the database", slog.Any("error", dbErr),
+				slog.String("device", device))
 			return dbErr
 		}
 	}

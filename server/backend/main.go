@@ -34,9 +34,9 @@ func main() {
 		time.Sleep(10 * time.Second)
 	}
 
-	// Setup lamps
-	if err := misc.SetupLamps(); err != nil {
-		slog.Error("Error during lamp setup", slog.Any("error", err))
+	// Setup devices
+	if err := misc.SetupDevices(); err != nil {
+		slog.Error("Error during device setup", slog.Any("error", err))
 		os.Exit(1)
 	}
 
@@ -52,8 +52,8 @@ func main() {
 		// Backend
 		r.Use(c.Handler)
 		r.Post("/api/addRecord", router.AddRecordHandler)
-		r.Get("/api/getLastByLamp/{lamp}", router.GetLastByLampHandler)
-		r.Get("/api/getLamps", router.GetLamps)
+		r.Get("/api/getLastByDevice/{device}", router.GetLastByDeviceHandler)
+		r.Get("/api/getDevices", router.GetDevices)
 		r.Get("/api/hc", router.HealthCheckHandler)
 		// Frontend
 		router.FileServer(r, "/", http.Dir("./frontend"))
