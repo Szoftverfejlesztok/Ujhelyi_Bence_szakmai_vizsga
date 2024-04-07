@@ -21,7 +21,7 @@ services:
     volumes:
       - ./frontend/:/app/frontend
     environment:
-      ROOMS: living_room dining_room kitchen bedroom bathroom hall_1 hall_2 kids_bedroom
+      DEVICES: living_room dining_room kitchen bedroom bathroom hall_1 3d_printer kids_bedroom
       XOR_KEY: "0100010001000100"
       DB_USER: root
       DB_PASS: supersecret

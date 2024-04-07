@@ -3,6 +3,7 @@ package misc
 import (
 	"backend/db"
 	"backend/types"
+	"backend/vars"
 	"encoding/hex"
 	"log/slog"
 	"os"
@@ -10,9 +11,9 @@ import (
 )
 
 var xorKey = func() []byte {
-	keyString := os.Getenv("XOR_KEY")
+	keyString := vars.GetKey()
 	if keyString == "" {
-		slog.Error("Environment variable not set", slog.String("env", "XOR_KEY"))
+		slog.Error("Environment variable not set", slog.String("env", keyString))
 		os.Exit(1)
 	}
 
@@ -37,11 +38,11 @@ func XorData(input string) (output string) {
 	return output
 }
 
-// SetupDevices read ROOMS system environment and assign one device to it
+// SetupDevices read DEVICES system environment and assign one device to it
 // This function os called only once before everything else starts
 func SetupDevices() error {
-	rooms := os.Getenv("ROOMS")
-	devices := strings.Fields(rooms)
+	deviceList := os.Getenv("DEVICES")
+	devices := strings.Fields(deviceList)
 
 	slog.Info("Adding devices to the database", slog.Any("devices", devices))
 	for _, device := range devices {

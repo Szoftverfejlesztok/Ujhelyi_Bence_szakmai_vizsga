@@ -31,6 +31,14 @@ func GetWSPort() string {
 	return port
 }
 
+func GetKey() string {
+	var key = os.Getenv("XOR_KEY")
+	if key == "" {
+		key = "0100010001000100"
+	}
+	return key
+}
+
 func GetMaxTry() int {
 	var mt, err = strconv.Atoi(os.Getenv("MAX_TRY"))
 	if err != nil || mt == 0 {
