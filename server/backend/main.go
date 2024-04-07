@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log/slog"
 	"net/http"
 	"os"
@@ -17,7 +18,6 @@ import (
 
 func main() {
 	// Wait for MySQL to start
-	slog.Info("Starting Smarthome API")
 	for i := 0; i < vars.GetMaxTry(); i++ {
 		if err := db.HealthCheck(); err == nil {
 			slog.Info("Database reached", slog.Int("attempt", i+1))
@@ -31,7 +31,20 @@ func main() {
 			os.Exit(1)
 		}
 
-		time.Sleep(10 * time.Second)
+		time.Sleep(5 * time.Second)
+	}
+
+	seedFlag := flag.Bool("seed", false, "Seed the running database")
+	flag.Parse()
+
+	if *seedFlag {
+		slog.Info("Running in seed mode")
+		if err := misc.Seed(); err != nil {
+			slog.Error("Error during seeding database", slog.Any("error", err))
+		}
+		os.Exit(0)
+	} else {
+		slog.Info("Running in standard mode")
 	}
 
 	// Setup devices

@@ -1,0 +1,5 @@
+.idea
+.vscode
+vendor
+server/db/data
+config.h

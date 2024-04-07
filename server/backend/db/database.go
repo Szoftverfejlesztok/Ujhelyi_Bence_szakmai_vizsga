@@ -26,9 +26,40 @@ func AddRecord(eventLog types.Device) (types.Device, error) {
 	}
 	defer db.Close()
 
-	_, err = db.Exec("INSERT INTO event_logs (device, date, state) VALUES (?, NOW(), ?)",
+	_, err = db.Exec("INSERT INTO event_logs (device, state, date) VALUES (?, ?, DATE_SUB(NOW(), INTERVAL 1 DAY))",
 		eventLog.Device,
 		eventLog.State)
+	if err != nil {
+		return types.Device{}, err
+	}
+
+	var res types.Device
+	var device, date string
+	var state bool
+
+	events := db.QueryRow("SELECT device, date, state FROM event_logs WHERE device=? ORDER BY id DESC", eventLog.Device)
+	if err = events.Scan(&device, &date, &state); err != nil {
+		return types.Device{}, err
+	}
+
+	res.Device = device
+	res.Date = date
+	res.State = state
+
+	return res, nil
+}
+
+func AddSeededRecord(eventLog types.Device, randomTime int) (types.Device, error) {
+	db, err := getDB()
+	if err != nil {
+		return types.Device{}, err
+	}
+	defer db.Close()
+
+	_, err = db.Exec("INSERT INTO event_logs (device, state, date) VALUES (?, ?, DATE_ADD(CONCAT(CURDATE() - INTERVAL 1 DAY, ' ', CURTIME()), INTERVAL ? MINUTE))",
+		eventLog.Device,
+		eventLog.State,
+		randomTime)
 	if err != nil {
 		return types.Device{}, err
 	}

@@ -6,8 +6,10 @@ import (
 	"backend/vars"
 	"encoding/hex"
 	"log/slog"
+	"math/rand"
 	"os"
 	"strings"
+	"time"
 )
 
 var xorKey = func() []byte {
@@ -38,23 +40,55 @@ func XorData(input string) (output string) {
 	return output
 }
 
-// SetupDevices read DEVICES system environment and assign one device to it
-// This function os called only once before everything else starts
+// SetupDevices read DEVICES system environment and assign devices
 func SetupDevices() error {
 	deviceList := os.Getenv("DEVICES")
 	devices := strings.Fields(deviceList)
 
 	slog.Info("Adding devices to the database", slog.Any("devices", devices))
 	for _, device := range devices {
-		l := types.Device{
+		d := types.Device{
 			Device: device,
 			State:  false,
 		}
-		if _, dbErr := db.AddRecord(l); dbErr != nil {
+		if _, dbErr := db.AddRecord(d); dbErr != nil {
 			slog.Error("Error adding device to the database", slog.Any("error", dbErr),
 				slog.String("device", device))
 			return dbErr
 		}
 	}
+	return nil
+}
+
+func Seed() error {
+	deviceList := os.Getenv("DEVICES")
+	devices := strings.Fields(deviceList)
+	states := make(map[string]bool)
+
+	slog.Info("Seeding started", slog.Any("devices", devices))
+	for _, device := range devices {
+		states[device] = false
+	}
+
+	source := rand.NewSource(time.Now().UnixNano())
+	random := rand.New(source)
+	for i := 0; i < 100; i++ {
+
+		// Generate random like change
+		index := random.Intn(len(devices))
+		device := devices[index]
+		states[device] = !states[device]
+		randomTime := random.Intn(14) + 2
+
+		// Insert into database
+		record := types.Device{
+			Device: device,
+			State:  states[device],
+		}
+		if _, err := db.AddSeededRecord(record, randomTime); err != nil {
+			slog.Error("Error seeding database with record", slog.String("key", device), slog.Bool("value", states[device]))
+		}
+	}
+
 	return nil
 }

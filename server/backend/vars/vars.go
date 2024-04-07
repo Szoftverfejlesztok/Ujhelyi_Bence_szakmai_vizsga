@@ -8,12 +8,44 @@ import (
 
 var (
 	ConnectionString = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s",
-		os.Getenv("DB_USER"),
-		os.Getenv("DB_PASS"),
-		os.Getenv("DB_HOST"),
-		os.Getenv("DB_PORT"),
+		getDBUser(),
+		getDBPassword(),
+		getDBHost(),
+		getDBPort(),
 		"smarthome")
 )
+
+func getDBUser() string {
+	var user = os.Getenv("DB_USER")
+	if user == "" {
+		user = "root"
+	}
+	return user
+}
+
+func getDBPassword() string {
+	var pass = os.Getenv("DB_PASS")
+	if pass == "" {
+		pass = "supersecret"
+	}
+	return pass
+}
+
+func getDBHost() string {
+	var host = os.Getenv("DB_HOST")
+	if host == "" {
+		host = "127.0.0.1"
+	}
+	return host
+}
+
+func getDBPort() string {
+	var port = os.Getenv("DB_PORT")
+	if port == "" {
+		port = "3306"
+	}
+	return port
+}
 
 func GetPort() string {
 	var port = os.Getenv("SH_PORT")
@@ -42,7 +74,7 @@ func GetKey() string {
 func GetMaxTry() int {
 	var mt, err = strconv.Atoi(os.Getenv("MAX_TRY"))
 	if err != nil || mt == 0 {
-		mt = 25
+		mt = 10
 	}
 	return mt
 }

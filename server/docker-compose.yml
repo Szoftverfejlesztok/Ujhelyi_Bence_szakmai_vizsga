@@ -1,4 +1,3 @@
-version: '3'
 services:
   db:
     image: mysql:8.1.0
@@ -9,7 +8,7 @@ services:
       - ./db/sql:/docker-entrypoint-initdb.d # Run every sql script what's in this directory
       - ./db/data:/var/lib/mysql/ # Mount data to the host to don't lose DB at restart
     ports:
-      - "3306:2206"
+      - "3306:3306"
     networks:
       - bridge
 
@@ -21,7 +20,7 @@ services:
     volumes:
       - ./frontend/:/app/frontend
     environment:
-      DEVICES: living_room dining_room kitchen bedroom bathroom hall_1 3d_printer kids_bedroom
+      DEVICES: living_room dining_room kitchen bedroom bathroom hall kids_bedroom 3d_printer
       XOR_KEY: "0100010001000100"
       DB_USER: root
       DB_PASS: supersecret
