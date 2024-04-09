@@ -17,7 +17,7 @@ function init() {
 
 // getDevices get the devices and their states from the database
 function getDevices() {
-    return fetch('http://backend:8088/api/getDevices')
+    return fetch('/api/getDevices')
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! State: ${response.state}`);
@@ -106,7 +106,7 @@ function sendNewState(name, state) {
         body: jsonData
     };
 
-    fetch('http://backend:8088/api/addRecord', requestOptions)
+    fetch('/api/addRecord', requestOptions)
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! State: ${response.state}`);
