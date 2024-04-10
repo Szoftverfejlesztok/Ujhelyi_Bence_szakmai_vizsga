@@ -36,7 +36,7 @@ String xorData(String input) {
     return ret;
 }
 
-void lampController(String input) {
+void deviceController(String input) {
   int length = input.length();
   bool binaryArray[length];
 
@@ -115,7 +115,7 @@ void loop() {
       if (debug) {
         Serial.printf("DEBUG :: WS :: Received: %s Decoded: %s\n", input, data);
       }
-      lampController(data);
+      deviceController(data);
     }
  
   } else {
