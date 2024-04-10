@@ -69,6 +69,7 @@ func main() {
 		r.Get("/api/hc", router.HealthCheckHandler)
 		// Frontend
 		router.FileServer(r, "/", http.Dir("./frontend"))
+		router.FileServer(r, "/statistics", http.Dir("./frontend/statistics"))
 
 		slog.Info("Smarthome API is running", slog.String("port", port))
 		if err := http.ListenAndServe(":"+port, r); err != nil {

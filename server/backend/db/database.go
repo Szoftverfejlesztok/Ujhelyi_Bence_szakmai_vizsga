@@ -26,7 +26,7 @@ func AddRecord(eventLog types.Device) (types.Device, error) {
 	}
 	defer db.Close()
 
-	_, err = db.Exec("INSERT INTO event_logs (device, state, date) VALUES (?, ?, DATE_SUB(NOW(), INTERVAL 1 DAY))",
+	_, err = db.Exec("INSERT INTO event_logs (device, state, date) VALUES (?, ?, NOW())",
 		eventLog.Device,
 		eventLog.State)
 	if err != nil {
@@ -147,7 +147,7 @@ func GetDevicesUptime() ([]types.Uptime, error) {
 	}
 	defer db.Close()
 
-	deviceArray, err := db.Query("SELECT device, SUM(TIMESTAMPDIFF(SECOND, start_time, end_time)) AS uptime FROM ( SELECT device, MIN(date) AS start_time, MAX(date) AS end_time FROM event_logs WHERE state = TRUE GROUP BY device, DATE(date) ) AS uptime_events GROUP BY device ORDER BY uptime DESC")
+	deviceArray, err := db.Query("SELECT device, SUM(TIMESTAMPDIFF(SECOND, start_time, end_time)) AS uptime FROM ( SELECT device, MIN(date) AS start_time, MAX(date) AS end_time FROM event_logs WHERE state = TRUE AND date >= NOW() - INTERVAL 1 DAY GROUP BY device, DATE(date) ) AS uptime_events GROUP BY device ORDER BY uptime DESC")
 	if err != nil {
 		return []types.Uptime{}, err
 	}

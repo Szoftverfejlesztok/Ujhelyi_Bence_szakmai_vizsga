@@ -3,16 +3,24 @@ function init() {
     getDevices()
         .then(data => {
             if (data !== null) {
-                const rooms = JSON.parse(data);
-                for (let i = 0; i < rooms.length; i++) {
-                    addDevice(i, rooms[i].device);
-                    if ( rooms[i].state === true ) {
-                        setSliderState(makeStringFancy(rooms[i].device), rooms[i].state)
+                const devices = JSON.parse(data);
+                for (let i = 0; i < devices.length; i++) {
+                    addDevice(i, devices[i].device);
+                    if ( devices[i].state === true ) {
+                        setSliderState(makeStringFancy(devices[i].device), devices[i].state)
                     }
                 }
             }
         });
 
+    // TODO run this every minute
+    getDevicesUptime()
+        .then(data => {
+            if (data !== null) {
+                const devices = JSON.parse(data);
+                updateChart(devices);
+            }
+        });
 }
 
 // getDevices get the devices and their states from the database
@@ -45,9 +53,11 @@ function addDevice(id, deviceName) {
     const cardDiv = document.createElement("div");
     cardDiv.className = "card";
     cardDiv.style.width = "auto";
+    cardDiv.style.border = "0";
 
     const cardBody = document.createElement("div");
     cardBody.className = "card-body";
+    cardBody.style.padding = "0 0 0 10px";
 
     const switchContainer = document.createElement("div");
     switchContainer.className = "switch-container";
@@ -121,3 +131,58 @@ function sendNewState(name, state) {
         });
 
 }
+
+// getDevicesUptime get the devices and their uptime in order from the database
+function getDevicesUptime() {
+    return fetch('/api/getDevicesUptime')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! State: ${response.state}`);
+            }
+            return response.text();
+        })
+        .then(data => {
+            return data;
+        })
+        .catch(error => {
+            console.error(`Error making the GET request: ${error.message}`);
+            return null;
+        });
+}
+
+// updateChart
+function updateChart(devices) {
+    let xValues = [];
+    let yValues = [];
+
+    for (let i = 0; i < devices.length; i++) {
+        let uptime = precise(devices[i].uptime / 3600)
+        let label = devices[i].device + " (" + uptime + "h)"
+
+        xValues.push(makeStringFancy(label))
+        yValues.push(uptime)
+    }
+
+    new Chart("uptimeChart", {
+    type: "bar",
+    data: {
+        labels: xValues,
+        datasets: [{
+        backgroundColor: "blue",
+        data: yValues
+        }]
+    },
+    options: {
+        legend: {display: false},
+        title: {
+        display: true,
+        text: "Uptimes in the last 24h"
+        }
+    }
+    });
+}
+
+function precise(x) {
+    return x.toPrecision(2);
+}
+  

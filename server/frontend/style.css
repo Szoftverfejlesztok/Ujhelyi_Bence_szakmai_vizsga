@@ -1,8 +1,12 @@
+h2 {
+    padding: 0 0 0 10px;
+}
+
 .switch-container {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    width: 300px;
+    width: 20rem;
 }
 
 .switch {
@@ -28,6 +32,7 @@
     background-color: #ccc;
     -webkit-transition: .4s;
     transition: .4s;
+    border-radius: 5px;
 }
 
 .slider:before {
@@ -40,6 +45,7 @@
     background-color: white;
     -webkit-transition: .4s;
     transition: .4s;
+    border-radius: 5px;
 }
 
 input:checked + .slider {
@@ -57,6 +63,13 @@ input:checked + .slider:before {
 }
 
 #cardContainer {
-    border-top: 1px lightgray solid;
-    border-bottom: 1px lightgray solid;
+    width: min-content;
+}
+
+.button-container {
+    margin: 0 20px 20px 20px;
+}
+
+.switch-container {
+    border: 0px;
 }
