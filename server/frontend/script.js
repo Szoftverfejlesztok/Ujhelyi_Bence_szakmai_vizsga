@@ -1,5 +1,5 @@
 // init runs only once when the page loads
-function init() {
+function initMain() {
     getDevices()
         .then(data => {
             if (data !== null) {
@@ -12,8 +12,9 @@ function init() {
                 }
             }
         });
+}
 
-    // TODO run this every minute
+function initStatistics() {
     getDevicesUptime()
         .then(data => {
             if (data !== null) {
