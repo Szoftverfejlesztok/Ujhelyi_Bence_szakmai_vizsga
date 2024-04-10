@@ -117,7 +117,7 @@ func GetDistinctDevice() ([]types.Device, error) {
 	}
 	defer db.Close()
 
-	deviceArray, err := db.Query("SELECT device, state FROM ( SELECT id, device, date, state, ROW_NUMBER() OVER (PARTITION BY device ORDER BY date DESC) AS rn FROM event_logs ) AS subquery WHERE rn = 1;")
+	deviceArray, err := db.Query("SELECT device, state FROM ( SELECT id, device, date, state, ROW_NUMBER() OVER (PARTITION BY device ORDER BY date DESC) AS rn FROM event_logs ) AS subquery WHERE rn = 1")
 	if err != nil {
 		return []types.Device{}, err
 	}
@@ -134,6 +134,36 @@ func GetDistinctDevice() ([]types.Device, error) {
 		}
 		tmp.Device = device
 		tmp.State = state
+		res = append(res, tmp)
+	}
+
+	return res, nil
+}
+
+func GetDevicesUptime() ([]types.Uptime, error) {
+	db, err := getDB()
+	if err != nil {
+		return []types.Uptime{}, err
+	}
+	defer db.Close()
+
+	deviceArray, err := db.Query("SELECT device, SUM(TIMESTAMPDIFF(SECOND, start_time, end_time)) AS uptime FROM ( SELECT device, MIN(date) AS start_time, MAX(date) AS end_time FROM event_logs WHERE state = TRUE GROUP BY device, DATE(date) ) AS uptime_events GROUP BY device ORDER BY uptime DESC")
+	if err != nil {
+		return []types.Uptime{}, err
+	}
+	defer deviceArray.Close()
+
+	var res []types.Uptime
+	for deviceArray.Next() {
+		var tmp types.Uptime
+		var device string
+		var uptime string
+		err = deviceArray.Scan(&device, &uptime)
+		if err != nil {
+			return []types.Uptime{}, err
+		}
+		tmp.Device = device
+		tmp.Uptime = uptime
 		res = append(res, tmp)
 	}
 

@@ -100,6 +100,26 @@ func GetDevices(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// GetDevicesUptime
+func GetDevicesUptime(w http.ResponseWriter, r *http.Request) {
+	slog.Info("Got GetDevicesUptime request")
+
+	devices, err := db.GetDevicesUptime()
+	if err != nil {
+		slog.Error("Error getting devices uptime", slog.Any("error", err))
+		http.Error(w, "Error getting record from the database", http.StatusInternalServerError)
+	}
+	var resp []byte
+	resp, err = json.Marshal(devices)
+	if err != nil {
+		slog.Error("Error marshalling response")
+	}
+
+	if _, err = w.Write(resp); err != nil {
+		slog.Error("Could not serve request for GetdevicesUptime")
+	}
+}
+
 // HealthCheckHandler handler for /hc GET requests
 func HealthCheckHandler(w http.ResponseWriter, r *http.Request) {
 	slog.Info("Got HealthCheck GET request")

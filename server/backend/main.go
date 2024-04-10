@@ -65,6 +65,7 @@ func main() {
 		r.Post("/api/addRecord", router.AddRecordHandler)
 		r.Get("/api/getLastByDevice/{device}", router.GetLastByDeviceHandler)
 		r.Get("/api/getDevices", router.GetDevices)
+		r.Get("/api/getDevicesUptime", router.GetDevicesUptime)
 		r.Get("/api/hc", router.HealthCheckHandler)
 		// Frontend
 		router.FileServer(r, "/", http.Dir("./frontend"))

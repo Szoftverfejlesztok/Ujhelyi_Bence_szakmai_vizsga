@@ -6,3 +6,8 @@ type Device struct {
 	Date   string `json:"date,omitempty"`
 	State  bool   `json:"state"`
 }
+
+type Uptime struct {
+	Device string `json:"device"`
+	Uptime string `json:"uptime"`
+}
