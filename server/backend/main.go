@@ -43,8 +43,6 @@ func main() {
 			slog.Error("Error during seeding database", slog.Any("error", err))
 		}
 		os.Exit(0)
-	} else {
-		slog.Info("Running in standard mode")
 	}
 
 	// Setup devices

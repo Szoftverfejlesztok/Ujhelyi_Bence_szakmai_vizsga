@@ -61,24 +61,27 @@ func SetupDevices() error {
 }
 
 func Seed() error {
-	deviceList := os.Getenv("DEVICES")
-	devices := strings.Fields(deviceList)
+	devices, err := db.GetDistinctDevice()
+	if err != nil {
+		slog.Error("Error getting distinct devices", slog.Any("error", err))
+	}
 	states := make(map[string]bool)
 
-	slog.Info("Seeding started", slog.Any("devices", devices))
+	slog.Info("Seeding started")
 	for _, device := range devices {
-		states[device] = false
+		states[device.Device] = false
 	}
 
 	source := rand.NewSource(time.Now().UnixNano())
 	random := rand.New(source)
-	for i := 0; i < 100; i++ {
+	records := 100
+	for i := 0; i < records; i++ {
 
 		// Generate random like change
 		index := random.Intn(len(devices))
-		device := devices[index]
+		device := devices[index].Device
 		states[device] = !states[device]
-		randomTime := random.Intn(14) + 2
+		randomTime := random.Intn(360) + 30
 
 		// Insert into database
 		record := types.Device{
@@ -89,6 +92,7 @@ func Seed() error {
 			slog.Error("Error seeding database with record", slog.String("key", device), slog.Bool("value", states[device]))
 		}
 	}
+	slog.Info("Seeding completed", slog.Int("records_added", records))
 
 	return nil
 }
