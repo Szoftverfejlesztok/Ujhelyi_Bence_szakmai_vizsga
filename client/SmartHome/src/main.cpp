@@ -23,9 +23,11 @@ WebSocketClient webSocketClient;
 WiFiClient client;
 
 String xorData(String input) {
+    /*
     if ( sizeof(xor_key) != input.length()) {
       return "";
     }
+    */
 
     String ret;
 
@@ -97,7 +99,7 @@ void setup() {
   if (debug) {
     Serial.printf("DEBUG :: XOR key :: key = %s\n", xor_key);
   } else if (!debug && xor_key == "10101010") {
-    Serial.println("WARNING :: XOR :: Not in dev enviroment and key is default. Change it!"):
+    Serial.println("WARNING :: XOR :: Not in dev enviroment and key is default. Change it!");
   }
 
 }
@@ -122,7 +124,6 @@ void loop() {
     Serial.println("ERROR :: WS :: Server unreachable");
   }
  
-  // Decrease at release
-  delay(5000);
+  delay(100);
  
 }

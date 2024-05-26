@@ -178,6 +178,14 @@ function updateChart(devices) {
         title: {
         display: true,
         text: "Uptimes in the last 24h"
+        },
+        scales: {
+            yAxes: [{
+                display: true,
+                ticks: {
+                    beginAtZero:true
+                }
+            }],
         }
     }
     });

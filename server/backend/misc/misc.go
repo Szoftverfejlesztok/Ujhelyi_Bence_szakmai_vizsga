@@ -72,16 +72,21 @@ func Seed() error {
 		states[device.Device] = false
 	}
 
+	// Prune records before seeding
+	if err := db.PruneRecords(); err != nil {
+		slog.Error("Error pruning records", slog.Any("error", err))
+	}
+
+	// Create random like events
 	source := rand.NewSource(time.Now().UnixNano())
 	random := rand.New(source)
 	records := 100
 	for i := 0; i < records; i++ {
-
 		// Generate random like change
 		index := random.Intn(len(devices))
 		device := devices[index].Device
 		states[device] = !states[device]
-		randomTime := random.Intn(360) + 30
+		randomTime := (5 * i) + random.Intn(5)
 
 		// Insert into database
 		record := types.Device{
@@ -92,6 +97,27 @@ func Seed() error {
 			slog.Error("Error seeding database with record", slog.String("key", device), slog.Bool("value", states[device]))
 		}
 	}
+
+	// Set everything off
+	for i := 0; i < len(devices); i++ {
+		device := devices[i].Device
+		if states[device] {
+			states[device] = false
+
+			randomTime := (5 * 101) + random.Intn(5)
+
+			// Insert into database
+			record := types.Device{
+				Device: device,
+				State:  states[device],
+			}
+			if _, err := db.AddSeededRecord(record, randomTime); err != nil {
+				slog.Error("Error seeding database with record", slog.String("key", device), slog.Bool("value", states[device]))
+			}
+		}
+
+	}
+
 	slog.Info("Seeding completed", slog.Int("records_added", records))
 
 	return nil

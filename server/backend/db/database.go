@@ -17,6 +17,21 @@ func getDB() (*sql.DB, error) {
 	return db, err
 }
 
+// PruneRecords delete records from event logs but keeps the table
+func PruneRecords() error {
+	db, err := getDB()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	_, err = db.Exec("TRUNCATE TABLE event_logs")
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // AddRecord adds a log record about state2 of a device
 // We don't give the ID due the database will create it
 func AddRecord(eventLog types.Device) (types.Device, error) {
@@ -56,7 +71,7 @@ func AddSeededRecord(eventLog types.Device, randomTime int) (types.Device, error
 	}
 	defer db.Close()
 
-	_, err = db.Exec("INSERT INTO event_logs (device, state, date) VALUES (?, ?, DATE_ADD(CONCAT(CURDATE() - INTERVAL 1 DAY, ' ', CURTIME()), INTERVAL ? MINUTE))",
+	_, err = db.Exec("INSERT INTO event_logs (device, state, date) VALUES (?, ?, DATE_ADD(CONCAT(CURDATE() - INTERVAL 1 DAY, ' ', TIME('06:00:00')), INTERVAL ? MINUTE))",
 		eventLog.Device,
 		eventLog.State,
 		randomTime)
@@ -147,7 +162,7 @@ func GetDevicesUptime() ([]types.Uptime, error) {
 	}
 	defer db.Close()
 
-	deviceArray, err := db.Query("SELECT device, SUM(TIMESTAMPDIFF(SECOND, start_time, end_time)) AS uptime FROM ( SELECT device, MIN(date) AS start_time, MAX(date) AS end_time FROM event_logs WHERE state = TRUE AND date >= NOW() - INTERVAL 1 DAY GROUP BY device, DATE(date) ) AS uptime_events GROUP BY device ORDER BY uptime DESC")
+	deviceArray, err := db.Query("SELECT device, SUM(TIMESTAMPDIFF(SECOND, start_time, end_time)) AS uptime FROM ( SELECT device, MIN(date) AS start_time, MAX(date) AS end_time FROM event_logs GROUP BY device, DATE(date) ) AS uptime_events GROUP BY device ORDER BY uptime DESC")
 	if err != nil {
 		return []types.Uptime{}, err
 	}
@@ -177,7 +192,7 @@ func GetStates() (string, error) {
 	}
 	defer db.Close()
 
-	deviceArray, err := db.Query("SELECT state FROM ( SELECT id, device, date, state, ROW_NUMBER() OVER (PARTITION BY device ORDER BY date DESC) AS rn FROM event_logs ) AS subquery WHERE rn = 1;")
+	deviceArray, err := db.Query("SELECT state FROM ( SELECT id, device, date, state, ROW_NUMBER() OVER (PARTITION BY device ORDER BY date DESC) AS rn FROM event_logs ) AS subquery WHERE rn = 1")
 	if err != nil {
 		return "", err
 	}
