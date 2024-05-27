@@ -17,6 +17,9 @@ import (
 )
 
 func main() {
+	seedFlag := flag.Bool("seed", false, "Seed the running database")
+	flag.Parse()
+
 	// Wait for MySQL to start
 	for i := 0; i < vars.GetMaxTry(); i++ {
 		if err := db.HealthCheck(); err == nil {
@@ -34,9 +37,7 @@ func main() {
 		time.Sleep(5 * time.Second)
 	}
 
-	seedFlag := flag.Bool("seed", false, "Seed the running database")
-	flag.Parse()
-
+	// Seed database with random data
 	if *seedFlag {
 		slog.Info("Running in seed mode")
 		if err := misc.Seed(); err != nil {
@@ -46,9 +47,18 @@ func main() {
 	}
 
 	// Setup devices
-	if err := misc.SetupDevices(); err != nil {
-		slog.Error("Error during device setup", slog.Any("error", err))
+	devices, err := db.GetDistinctDevice()
+	if err != nil {
+		slog.Error("Error getting devices", slog.Any("error", err))
 		os.Exit(1)
+	}
+
+	if len(devices) == 0 {
+		slog.Info("Starting device setup")
+		if err := misc.SetupDevices(); err != nil {
+			slog.Error("Error during device setup", slog.Any("error", err))
+			os.Exit(1)
+		}
 	}
 
 	// HTTP
