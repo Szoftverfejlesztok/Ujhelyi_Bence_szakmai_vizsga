@@ -17,15 +17,12 @@ var upgrader = websocket.Upgrader{}
 
 // AddRecordHandler handler for /addRecord POST request
 func AddRecordHandler(w http.ResponseWriter, r *http.Request) {
-	slog.Info("Got AddRecord POST request")
-
 	event := &types.Device{}
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&event); err != nil {
 		http.Error(w, "Error unmarshalling request body", http.StatusBadRequest)
 		return
 	}
-	slog.Info("Request body", slog.String("device", event.Device), slog.Bool("state", event.State))
 	if _, err := db.IsDeviceExist(event.Device); err != nil {
 		http.Error(w, "Error this device does not exist", http.StatusBadRequest)
 	}
@@ -45,6 +42,11 @@ func AddRecordHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if event.State {
+		slog.Debug("Device turned on", slog.String("device", event.Device))
+	} else {
+		slog.Debug("Device turned off", slog.String("device", event.Device))
+	}
 	resp, err := json.Marshal(record)
 	if err != nil {
 		slog.Error("Error marshalling response")
@@ -58,7 +60,6 @@ func AddRecordHandler(w http.ResponseWriter, r *http.Request) {
 // GetLastByDeviceHandler handler for /getLastByDevice/<device> GET requests
 func GetLastByDeviceHandler(w http.ResponseWriter, r *http.Request) {
 	device := chi.URLParam(r, "device")
-	slog.Info("Got GetLastByDevice GET request", slog.String("device", device))
 	if _, err := db.IsDeviceExist(device); err != nil {
 		http.Error(w, "Error this device does not exist", http.StatusBadRequest)
 	}
@@ -82,8 +83,6 @@ func GetLastByDeviceHandler(w http.ResponseWriter, r *http.Request) {
 
 // GetDevices
 func GetDevices(w http.ResponseWriter, r *http.Request) {
-	slog.Info("Got GetDevices request")
-
 	devices, err := db.GetDistinctDevice()
 	if err != nil {
 		slog.Error("Error getting devices", slog.Any("error", err))
@@ -102,8 +101,6 @@ func GetDevices(w http.ResponseWriter, r *http.Request) {
 
 // GetDevicesUptime
 func GetDevicesUptime(w http.ResponseWriter, r *http.Request) {
-	slog.Info("Got GetDevicesUptime request")
-
 	devices, err := db.GetDevicesUptime()
 	if err != nil {
 		slog.Error("Error getting devices uptime", slog.Any("error", err))
@@ -122,8 +119,6 @@ func GetDevicesUptime(w http.ResponseWriter, r *http.Request) {
 
 // HealthCheckHandler handler for /hc GET requests
 func HealthCheckHandler(w http.ResponseWriter, r *http.Request) {
-	slog.Info("Got HealthCheck GET request")
-
 	var resp = "OK"
 	if err := db.HealthCheck(); err != nil {
 		resp = "NOT_OK"
@@ -154,9 +149,8 @@ func FileServer(r chi.Router, path string, root http.FileSystem) {
 	})
 }
 
-// HandleClients handler for the /smart-home WS connections
+// HandleClient handler for the /smart-home WS connections
 func HandleClient(w http.ResponseWriter, r *http.Request) {
-	slog.Info("Controller tries to connect")
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		slog.Error("Error connection to upgrade", slog.Any("error", err))
@@ -181,7 +175,7 @@ func HandleClient(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-		if string(msg) != "OK\n" {
+		if !strings.HasPrefix(string(msg), "OK") {
 			slog.Info("Received message from client", slog.String("client", conn.RemoteAddr().String()),
 				slog.String("message", string(msg)))
 		}
