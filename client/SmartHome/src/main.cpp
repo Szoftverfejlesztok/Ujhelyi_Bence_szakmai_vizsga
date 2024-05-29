@@ -55,19 +55,7 @@ void deviceController(String input) {
   }
 }
 
-void setup() {
-  Serial.begin(115200);
-
-  pinMode(R0, OUTPUT);
-  pinMode(R1, OUTPUT);
-  pinMode(R2, OUTPUT);
-  pinMode(R3, OUTPUT);
-  pinMode(R4, OUTPUT);
-  pinMode(R5, OUTPUT);
-  pinMode(R6, OUTPUT);
-  pinMode(R7, OUTPUT);
- 
-  // Connect to WIFI
+void connectWifi() {
   Serial.printf("INFO :: WIFI :: Connecting to %s\n", wifi_ssid);
   WiFi.begin(wifi_ssid, wifi_pass);
   int attempt = 1;
@@ -78,16 +66,16 @@ void setup() {
   }
   Serial.printf("INFO :: WIFI :: IP address: ");
   Serial.println(WiFi.localIP());
- 
-  // Connect to WebSocket
-  delay(5000);
+}
+
+void connectWebSocket() {
   if (client.connect(host, port)) {
     Serial.println("INFO :: WS :: Connected");
   } else {
     Serial.println("ERROR :: WS :: Connection failed");
   }
- 
-  // Create WebSocket handshake
+
+  // Create handshake
   webSocketClient.path = path;
   webSocketClient.host = host;
   if (webSocketClient.handshake(client)) {
@@ -101,12 +89,32 @@ void setup() {
   } else if (!debug && xor_key == "10101010") {
     Serial.println("WARNING :: XOR :: Not in dev enviroment and key is default. Change it!");
   }
+}
 
+void setup() {
+  Serial.begin(115200);
+
+  pinMode(R0, OUTPUT);
+  pinMode(R1, OUTPUT);
+  pinMode(R2, OUTPUT);
+  pinMode(R3, OUTPUT);
+  pinMode(R4, OUTPUT);
+  pinMode(R5, OUTPUT);
+  pinMode(R6, OUTPUT);
+  pinMode(R7, OUTPUT);
+ 
+  connectWifi();
+  delay(5000);
+  connectWebSocket();
 }
  
 void loop() {
   String input;
  
+  if (WiFi.status() != WL_CONNECTED) {
+    connectWifi();
+  }
+
   if (client.connected()) {
     // Sending alive signal
     webSocketClient.sendData("OK");
@@ -121,7 +129,8 @@ void loop() {
     }
  
   } else {
-    Serial.println("ERROR :: WS :: Server unreachable");
+    Serial.println("ERROR :: WS :: Server unreachable, trying to reconnect");
+    connectWebSocket();
   }
  
   delay(100);
