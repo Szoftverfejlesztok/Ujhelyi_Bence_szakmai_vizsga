@@ -158,7 +158,7 @@ func HandleClient(w http.ResponseWriter, r *http.Request) {
 	}
 	defer conn.Close()
 
-	slog.Info("Controller connected")
+	slog.Info("Controller connected", slog.String("source", conn.RemoteAddr().String()))
 
 	// SENDING DATA
 	for {
@@ -168,7 +168,7 @@ func HandleClient(w http.ResponseWriter, r *http.Request) {
 				slog.Warn("Controller disconnected")
 				return
 			} else if strings.Contains(err.Error(), "connection timed out") {
-				slog.Warn("Controloller timeouted")
+				slog.Warn("Controller timeout")
 				return
 			} else {
 				slog.Error("Error read message", slog.Any("error", err))
